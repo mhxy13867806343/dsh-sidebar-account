@@ -1,0 +1,32 @@
+{
+  "name": "dsh-sidebar-account",
+  "version": "1.0.0",
+  "private": true,
+  "description": "侧栏底部的余额行：显示充值余额，右边一个「充值」按钮，点了直接打开充值页（系统浏览器）。",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "meta": {
+    "title": "侧栏余额与充值",
+    "description": "在侧栏账号那一行上面显示充值余额，并给一个「充值」按钮：点击直接打开充值页。"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  }
+}

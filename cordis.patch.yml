@@ -1,0 +1,9 @@
+# dsh-sidebar-account 的 bundle patch。
+#
+# 只插一行 Host 插件（本插件是纯客户端 UI，Host 半边是空壳，
+# 存在的意义只是让 bundle 有一行可装载的入口）。
+# 真正的余额读取走客户端已经注入好的 `ctx.remote.account`，不需要自己的 Host 服务。
+
+- insert:
+    - id: sidebar-account
+      name: 'dsh-sidebar-account'
