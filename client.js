@@ -272,7 +272,8 @@ a.dsa-btn, a.dsa-btn:visited { color: var(--dsw-alias-label-primary); text-decor
 
 			return h(
 				'div',
-				{ className: 'dsa-wrap' },
+				// 最外层也用内联：<style> 万一没被应用，靠 class 的 width:100% 会被挤成内容宽
+				{ className: 'dsa-wrap', style: { width: '100%', display: 'block' } },
 				h('style', null, CSS),
 				h(
 					'div',
