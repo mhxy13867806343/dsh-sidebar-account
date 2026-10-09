@@ -276,7 +276,12 @@ a.dsa-btn, a.dsa-btn:visited { color: var(--dsw-alias-label-primary); text-decor
 				h('style', null, CSS),
 				h(
 					'div',
-					{ className: 'dsa-card', title },
+					{
+						className: 'dsa-card',
+						title,
+						// 内联兜底：宿主侧栏容器的宽度/对齐会变，靠 class 里的 width:100% 有被挤成内容宽的风险
+						style: { boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', width: '100%', padding: '6px 8px', border: '.5px solid var(--dsw-alias-border-l1)', borderRadius: '10px', background: 'var(--dsw-alias-bg-layer-1)' },
+					},
 					// 和上面那行（版本 + 检查更新）对齐：左边余额，右边充值。
 					h(
 						'span',
