@@ -133,19 +133,49 @@ a.dsa-btn, a.dsa-btn:visited { color: var(--dsw-alias-label-primary); text-decor
 		// 金额格式化（纯字符串截断，不走浮点，和设置页的「向下取两位」一致）
 		// -------------------------------------------------------------------
 
-		function formatMoney(amount, symbol) {
-			const text = String(amount ?? '').trim();
-			const match = /^(-)?(\d+)(?:\.(\d+))?$/u.exec(text);
-			if (match === null) return `${symbol}${text}`;
-			const negative = match[1] === '-';
-			const integer = match[2];
+		/**
+		 * 把 Platform 返回的任意金额写法折成 { negative, integer, fraction }。
+		 *
+		 * Platform 的 `balance` 是字符串，实测会出现科学计数法（`1.0e-7`）和
+		 * 千分位；原来的实现只认 `123.45`，认不出就把原串直接印到界面上，
+		 * 于是侧栏出现了 `¥1e-7`。这里改成先做**纯字符串**的规范化——
+		 * 全流程不经过 Number，既不会把大额截成浮点，也不会把小额还原成指数。
+		 */
+		function splitAmount(raw) {
+			const text = String(raw ?? '')
+				.trim()
+				.replace(/[,\s_]/gu, '');
+			const match = /^([+-]?)(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/u.exec(text);
+			if (match === null) return null;
+			const integer = match[2] ?? '';
 			const fraction = match[3] ?? '';
+			if (integer === '' && fraction === '') return null;
+			let digits = integer + fraction;
+			const exponent = match[4] === undefined ? 0 : Number.parseInt(match[4], 10);
+			let point = integer.length + exponent;
+			if (point <= 0) {
+				digits = `${'0'.repeat(1 - point)}${digits}`;
+				point = 1;
+			} else if (point > digits.length) {
+				digits = `${digits}${'0'.repeat(point - digits.length)}`;
+			}
+			return {
+				negative: match[1] === '-',
+				integer: digits.slice(0, point).replace(/^0+(?=\d)/u, ''),
+				fraction: digits.slice(point),
+			};
+		}
+
+		function formatMoney(amount, symbol) {
+			const parts = splitAmount(amount);
+			if (parts === null) return `${symbol}${String(amount ?? '').trim()}`;
+			const { negative, integer, fraction } = parts;
 			// 是不是真正的 0，要看**所有**小数位，不能只看前两位（0.005 不是 0）。
 			if (/^0*$/u.test(integer) && /^0*$/u.test(fraction)) return `${symbol}0.00`;
 			const cents = `${fraction}00`.slice(0, 2);
 			const underOneCent = /^0*$/u.test(integer) && cents === '00';
 			if (underOneCent) return negative ? `-${symbol}0.01` : `<${symbol}0.01`;
-			const grouped = Number(integer).toLocaleString('en-US');
+			const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/gu, ',');
 			return `${negative ? '-' : ''}${symbol}${grouped}.${cents}`;
 		}
 
